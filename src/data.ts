@@ -119,7 +119,8 @@ export const DEFAULT_STATE: AppState = {
   hargaBerasPerLiter: 12000,
   gasWebappUrl: '',
   namaMasjid: 'Masjid Nurul Qalam',
-  alamatMasjid: 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan'
+  alamatMasjid: 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan',
+  kontakMasjid: '0812-4567-8910'
 };
 
 const LOCAL_STORAGE_KEY = 'zakat_fitrah_app_state';

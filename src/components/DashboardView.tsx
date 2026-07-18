@@ -39,6 +39,15 @@ export default function DashboardView({
 }: DashboardViewProps) {
   const [selectedChartTab, setSelectedChartTab] = useState<'penerimaan' | 'distribusi'>('penerimaan');
 
+  // Real-time clock for dashboard banner
+  const [liveTime, setLiveTime] = React.useState(new Date());
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Calculations
   const totalKK = muzakkis.length;
   
@@ -277,9 +286,14 @@ export default function DashboardView({
             Rekapitulasi data penerimaan dan penyaluran zakat fitrah Masjid Nurul Qalam Pakkanrebete.
           </p>
         </div>
-        <div className="flex items-center gap-2.5 text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-4 py-2.5 rounded-xl border border-emerald-100 w-fit uppercase tracking-widest">
-          <Activity className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-          TERAKHIR: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-4 bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100 font-mono text-[10px] font-bold text-emerald-800 uppercase tracking-widest w-fit">
+          <div className="flex items-center gap-1.5 leading-none">
+            <Activity className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+            LIVE CLOCK: <span className="text-emerald-950 font-black text-xs font-mono">{liveTime.toLocaleTimeString('id-ID')}</span>
+          </div>
+          <div className="text-[9px] text-emerald-700/80 font-bold border-t sm:border-t-0 sm:border-l border-emerald-200/60 pt-1.5 sm:pt-0 sm:pl-3">
+            {liveTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </div>
         </div>
       </div>
 

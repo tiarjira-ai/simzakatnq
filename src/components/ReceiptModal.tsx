@@ -14,13 +14,15 @@ interface ReceiptModalProps {
   onClose: () => void;
   namaMasjid?: string;
   alamatMasjid?: string;
+  kontakMasjid?: string;
 }
 
 export default function ReceiptModal({ 
   transaksi, 
   onClose,
   namaMasjid = 'Masjid Nurul Qalam',
-  alamatMasjid = 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan'
+  alamatMasjid = 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan',
+  kontakMasjid = '0812-4567-8910'
 }: ReceiptModalProps) {
   const [showScannerSim, setShowScannerSim] = useState(false);
 
@@ -80,6 +82,11 @@ export default function ReceiptModal({
             <p className="text-xs text-slate-500 font-mono font-bold uppercase tracking-wider">
               {alamatMasjid}
             </p>
+            {kontakMasjid && (
+              <p className="text-[10px] text-slate-400 font-mono font-bold tracking-wider mt-1 uppercase">
+                Kontak: {kontakMasjid}
+              </p>
+            )}
             <div className="mt-2.5 inline-block bg-emerald-100/60 text-emerald-800 text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase tracking-widest print:hidden">
               BUKTI PEMBAYARAN RESMI
             </div>

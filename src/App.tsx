@@ -78,11 +78,12 @@ export default function App() {
     }));
   };
 
-  const handleUpdateMosqueInfo = (nama: string, alamat: string) => {
+  const handleUpdateMosqueInfo = (nama: string, alamat: string, kontak: string) => {
     setState(prev => ({
       ...prev,
       namaMasjid: nama,
-      alamatMasjid: alamat
+      alamatMasjid: alamat,
+      kontakMasjid: kontak
     }));
   };
 
@@ -96,6 +97,29 @@ export default function App() {
 
   // 5. Sidebar Toggle (Mobile responsive)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  // 6. Running Real-time Clock State
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedTime = time.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  
+  const formattedDate = time.toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 
   // Automatic LocalStorage synchronization on mutations
   useEffect(() => {
@@ -304,6 +328,15 @@ export default function App() {
 
         {/* User Role Switcher Controls & Quick Settings */}
         <div className="flex items-center gap-3">
+          {/* Real-time Clock Widget */}
+          <div className="hidden md:flex flex-col items-end px-3.5 py-1.5 bg-emerald-950/50 rounded-xl border border-emerald-800/30 font-mono text-[11px] font-bold text-emerald-400">
+            <span className="text-white text-xs tracking-wider flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              {formattedTime}
+            </span>
+            <span className="text-[8px] text-emerald-500/80 mt-0.5">{formattedDate}</span>
+          </div>
+
           {/* Quick Config Rice Price (Available for Admin) */}
           {activeUser.role === 'admin' && (
             <button
@@ -601,6 +634,7 @@ export default function App() {
             onClose={() => setActiveReceipt(null)}
             namaMasjid={state.namaMasjid}
             alamatMasjid={state.alamatMasjid}
+            kontakMasjid={state.kontakMasjid}
           />
         )}
       </AnimatePresence>

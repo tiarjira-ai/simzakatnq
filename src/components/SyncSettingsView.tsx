@@ -36,7 +36,7 @@ interface SyncSettingsViewProps {
   onAddUser: (user: User) => void;
   onUpdateUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
-  onUpdateMosqueInfo: (nama: string, alamat: string) => void;
+  onUpdateMosqueInfo: (nama: string, alamat: string, kontak: string) => void;
 }
 
 export default function SyncSettingsView({
@@ -59,6 +59,7 @@ export default function SyncSettingsView({
   // Mosque Info editing states
   const [namaMasjid, setNamaMasjid] = useState(appState.namaMasjid || 'Masjid Nurul Qalam');
   const [alamatMasjid, setAlamatMasjid] = useState(appState.alamatMasjid || 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan');
+  const [kontakMasjid, setKontakMasjid] = useState(appState.kontakMasjid || '0812-4567-8910');
 
   // Petugas CRUD Form states
   const [showUserForm, setShowUserForm] = useState(false);
@@ -74,7 +75,8 @@ export default function SyncSettingsView({
   useEffect(() => {
     if (appState.namaMasjid) setNamaMasjid(appState.namaMasjid);
     if (appState.alamatMasjid) setAlamatMasjid(appState.alamatMasjid);
-  }, [appState.namaMasjid, appState.alamatMasjid]);
+    if (appState.kontakMasjid) setKontakMasjid(appState.kontakMasjid);
+  }, [appState.namaMasjid, appState.alamatMasjid, appState.kontakMasjid]);
 
   // Helper copy function
   const handleCopyCode = () => {
@@ -105,8 +107,8 @@ export default function SyncSettingsView({
       alert('Nama masjid tidak boleh kosong!');
       return;
     }
-    onUpdateMosqueInfo(namaMasjid.trim(), alamatMasjid.trim());
-    alert('Informasi Masjid & Wilayah berhasil diperbarui!');
+    onUpdateMosqueInfo(namaMasjid.trim(), alamatMasjid.trim(), kontakMasjid.trim());
+    alert('Informasi Masjid, Alamat, & Kontak berhasil diperbarui!');
   };
 
   const handleOpenAddUser = () => {
@@ -270,7 +272,7 @@ export default function SyncSettingsView({
             </p>
 
             <form onSubmit={handleSaveMosqueInfo} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Nama Masjid / Instansi</label>
                   <input
@@ -291,6 +293,18 @@ export default function SyncSettingsView({
                     value={alamatMasjid}
                     onChange={(e) => setAlamatMasjid(e.target.value)}
                     placeholder="Contoh: Lalabata, Kabupaten Soppeng"
+                    className="w-full bg-slate-50/50 border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:bg-white focus:outline-hidden focus:border-emerald-500 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Kontak / No. Telepon Masjid</label>
+                  <input
+                    type="text"
+                    required
+                    value={kontakMasjid}
+                    onChange={(e) => setKontakMasjid(e.target.value)}
+                    placeholder="Contoh: 0812-4567-8910"
                     className="w-full bg-slate-50/50 border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:bg-white focus:outline-hidden focus:border-emerald-500 transition-all"
                   />
                 </div>

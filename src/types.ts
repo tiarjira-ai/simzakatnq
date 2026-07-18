@@ -73,4 +73,5 @@ export interface AppState {
   gasWebappUrl: string; // Google Apps Script Web App URL for sync
   namaMasjid?: string;
   alamatMasjid?: string;
+  kontakMasjid?: string;
 }
