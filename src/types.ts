@@ -70,4 +70,6 @@ export interface AppState {
   distribusis: Distribusi[];
   hargaBerasPerLiter: number; // Default: Rp 12.000
   gasWebappUrl: string; // Google Apps Script Web App URL for sync
+  namaMasjid?: string;
+  alamatMasjid?: string;
 }

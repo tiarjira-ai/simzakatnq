@@ -113,7 +113,9 @@ export const DEFAULT_STATE: AppState = {
   mustahiks: SEED_MUSTAHIKS,
   distribusis: SEED_DISTRIBUSIS,
   hargaBerasPerLiter: 12000,
-  gasWebappUrl: ''
+  gasWebappUrl: '',
+  namaMasjid: 'Masjid Nurul Qalam',
+  alamatMasjid: 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan'
 };
 
 const LOCAL_STORAGE_KEY = 'zakat_fitrah_app_state';

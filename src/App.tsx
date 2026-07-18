@@ -38,8 +38,53 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'muzakki' | 'transaksi' | 'mustahik' | 'distribusi' | 'laporan' | 'sync'>('dashboard');
 
   // 2. Role Switcher / Authentication Simulation State
-  const [activeUser, setActiveUser] = useState<User>(SEED_USERS[0]); // Default to Admin
+  const [activeUser, setActiveUser] = useState<User>(() => {
+    const currentState = loadState();
+    return currentState.users[0] || SEED_USERS[0];
+  });
   const [showRoleMenu, setShowRoleMenu] = useState(false);
+
+  // Sync activeUser with user database changes
+  useEffect(() => {
+    const found = state.users.find(u => u.id === activeUser.id);
+    if (!found) {
+      if (state.users.length > 0) {
+        setActiveUser(state.users[0]);
+      }
+    } else if (found.nama !== activeUser.nama || found.role !== activeUser.role || found.username !== activeUser.username) {
+      setActiveUser(found);
+    }
+  }, [state.users, activeUser]);
+
+  // CRUD Handlers for Users (Petugas)
+  const handleAddUser = (newUser: User) => {
+    setState(prev => ({
+      ...prev,
+      users: [...prev.users, newUser]
+    }));
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setState(prev => ({
+      ...prev,
+      users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u)
+    }));
+  };
+
+  const handleDeleteUser = (id: string) => {
+    setState(prev => ({
+      ...prev,
+      users: prev.users.filter(u => u.id !== id)
+    }));
+  };
+
+  const handleUpdateMosqueInfo = (nama: string, alamat: string) => {
+    setState(prev => ({
+      ...prev,
+      namaMasjid: nama,
+      alamatMasjid: alamat
+    }));
+  };
 
   // 3. Configurations
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -217,8 +262,9 @@ export default function App() {
   // WhatsApp reminder (Feature 15)
   const triggerWhatsAppReminder = (muzakki: Muzakki) => {
     const formattedNum = muzakki.no_hp.startsWith('0') ? `62${muzakki.no_hp.substring(1)}` : `62${muzakki.no_hp}`;
+    const mosqueName = state.namaMasjid || 'Masjid Nurul Qalam';
     const text = encodeURIComponent(
-      `Assalamu'alaikum Wr. Wb. Bapak/Ibu *${muzakki.nama}*.\n\nKami dari *Panitia Zakat Fitrah Masjid Nurul Qalam Pakkanrebete* ingin mengabarkan sekaligus mengingatkan bahwa loket pembayaran zakat fitrah resmi Ramadhan telah dibuka di Masjid.\n\nWajib zakat untuk keluarga Anda: *${muzakki.jumlah_jiwa} Jiwa*.\nTakaran beras: *${muzakki.jumlah_jiwa * 3.5} Liter* (atau setara *${formatCurrency(muzakki.jumlah_jiwa * 3.5 * state.hargaBerasPerLiter)}* jika berupa uang).\n\nMari segera tunaikan kewajiban suci kita sebelum akhir Ramadhan tiba. Atas perhatiannya kami haturkan Jazakumullah Khairan.`
+      `Assalamu'alaikum Wr. Wb. Bapak/Ibu *${muzakki.nama}*.\n\nKami dari *Panitia Zakat Fitrah ${mosqueName}* ingin mengabarkan sekaligus mengingatkan bahwa loket pembayaran zakat fitrah resmi Ramadhan telah dibuka di Masjid.\n\nWajib zakat untuk keluarga Anda: *${muzakki.jumlah_jiwa} Jiwa*.\nTakaran beras: *${muzakki.jumlah_jiwa * 3.5} Liter* (atau setara *${formatCurrency(muzakki.jumlah_jiwa * 3.5 * state.hargaBerasPerLiter)}* jika berupa uang).\n\nMari segera tunaikan kewajiban suci kita sebelum akhir Ramadhan tiba. Atas perhatiannya kami haturkan Jazakumullah Khairan.`
     );
     window.open(`https://wa.me/${formattedNum}?text=${text}`, '_blank');
   };
@@ -247,10 +293,10 @@ export default function App() {
             <span className="text-2xl filter drop-shadow-sm">🕌</span>
             <div>
               <h1 className="text-sm md:text-base font-serif font-black tracking-wide leading-none">
-                Masjid Nurul Qalam
+                {state.namaMasjid || 'Masjid Nurul Qalam'}
               </h1>
               <p className="text-[9px] text-emerald-400 font-mono font-bold tracking-widest uppercase mt-1">
-                Sistem Zakat Fitrah Pakkanrebete
+                {state.alamatMasjid || 'Sistem Zakat Fitrah Pakkanrebete'}
               </p>
             </div>
           </div>
@@ -299,7 +345,7 @@ export default function App() {
                   <div className="px-3 py-2 border-b border-gray-50 mb-1.5">
                     <span className="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-widest">Pilih Petugas / Peran</span>
                   </div>
-                  {SEED_USERS.map(u => (
+                  {state.users.map(u => (
                     <button
                       key={u.id}
                       onClick={() => {
@@ -388,7 +434,7 @@ export default function App() {
           <div className="space-y-4 pt-4 border-t border-emerald-950">
             {/* Quick reminder card */}
             <div className="bg-[#030a07] p-4.5 rounded-xl border border-emerald-900/50 text-[10px] space-y-1.5 shadow-xs">
-              <span className="font-mono font-extrabold text-emerald-400 block tracking-widest uppercase">MASJID NURUL QALAM</span>
+              <span className="font-mono font-extrabold text-emerald-400 block tracking-widest uppercase truncate">{state.namaMasjid || 'MASJID NURUL QALAM'}</span>
               <p className="text-emerald-100/70 leading-relaxed">
                 Ketetapan Zakat Fitrah: <span className="text-white font-extrabold font-mono">{formatCurrency(state.hargaBerasPerLiter * 3.5)}</span> / jiwa (3.5 L Beras).
               </p>
@@ -492,6 +538,8 @@ export default function App() {
                   dkmApproved={dkmApproved}
                   onToggleDKMApproval={() => setDkmApproved(prev => !prev)}
                   currentUser={activeUser}
+                  namaMasjid={state.namaMasjid}
+                  alamatMasjid={state.alamatMasjid}
                 />
               )}
 
@@ -501,6 +549,10 @@ export default function App() {
                   onUpdateWebappUrl={handleUpdateWebappUrl}
                   onUpdateHargaBeras={handleUpdateHargaBerasDirect}
                   onResetToSeed={handleResetToSeed}
+                  onAddUser={handleAddUser}
+                  onUpdateUser={handleUpdateUser}
+                  onDeleteUser={handleDeleteUser}
+                  onUpdateMosqueInfo={handleUpdateMosqueInfo}
                 />
               )}
             </motion.div>
@@ -546,6 +598,8 @@ export default function App() {
           <ReceiptModal
             transaksi={activeReceipt}
             onClose={() => setActiveReceipt(null)}
+            namaMasjid={state.namaMasjid}
+            alamatMasjid={state.alamatMasjid}
           />
         )}
       </AnimatePresence>

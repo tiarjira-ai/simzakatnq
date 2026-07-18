@@ -31,6 +31,8 @@ interface LaporanViewProps {
   dkmApproved: boolean;
   onToggleDKMApproval: () => void;
   currentUser: User;
+  namaMasjid?: string;
+  alamatMasjid?: string;
 }
 
 export default function LaporanView({
@@ -41,7 +43,9 @@ export default function LaporanView({
   hargaBeras,
   dkmApproved,
   onToggleDKMApproval,
-  currentUser
+  currentUser,
+  namaMasjid = 'Masjid Nurul Qalam',
+  alamatMasjid = 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan'
 }: LaporanViewProps) {
   const [filterType, setFilterType] = useState<'harian' | 'mingguan' | 'rekap'>('rekap');
   const [filterRt, setFilterRt] = useState('Semua');
@@ -74,7 +78,7 @@ export default function LaporanView({
   // Export to Excel-compatible CSV
   const handleExportCSV = () => {
     let csvContent = 'data:text/csv;charset=utf-8,';
-    csvContent += 'REKAPITULASI AKHIR RAMADHAN - MASJID NURUL QALAM PAKKANREBETE\n\n';
+    csvContent += `REKAPITULASI AKHIR RAMADHAN - ${namaMasjid.toUpperCase()} ${alamatMasjid.toUpperCase()}\n\n`;
     csvContent += `Parameter,Nilai\n`;
     csvContent += `Total Kepala Keluarga Muzakki,${totalMuzakki} KK\n`;
     csvContent += `Total Jiwa Wajib Zakat,${totalJiwa} Jiwa\n`;
@@ -135,13 +139,13 @@ export default function LaporanView({
         {/* Printable Official Kop Surat Header */}
         <div className="text-center border-b-4 border-double border-slate-900 pb-5">
           <h1 className="text-xl md:text-2xl font-serif font-black text-slate-950 tracking-wide uppercase">
-            PANITIA RAMADHAN MASJID NURUL QALAM
+            PANITIA RAMADHAN {namaMasjid}
           </h1>
           <p className="text-xs text-slate-600 font-bold font-mono uppercase mt-1 tracking-widest">
-            PAKKANREBETE, KEL. PAKKANREBETE, KEC. LALABATA, KAB. SOPPENG, SULAWESI SELATAN
+            {alamatMasjid}
           </p>
           <p className="text-[10px] text-slate-400 font-mono mt-1 font-bold uppercase tracking-wider">
-            Sekretariat: Kompleks Masjid Nurul Qalam Pakkanrebete | HP: 0812-4244-1122
+            Sekretariat: Kompleks {namaMasjid} | HP: 0812-4244-1122
           </p>
         </div>
 

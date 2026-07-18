@@ -12,16 +12,23 @@ import { motion, AnimatePresence } from 'motion/react';
 interface ReceiptModalProps {
   transaksi: Transaksi | null;
   onClose: () => void;
+  namaMasjid?: string;
+  alamatMasjid?: string;
 }
 
-export default function ReceiptModal({ transaksi, onClose }: ReceiptModalProps) {
+export default function ReceiptModal({ 
+  transaksi, 
+  onClose,
+  namaMasjid = 'Masjid Nurul Qalam',
+  alamatMasjid = 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan'
+}: ReceiptModalProps) {
   const [showScannerSim, setShowScannerSim] = useState(false);
 
   if (!transaksi) return null;
 
   // Format QR Data
   const qrData = encodeURIComponent(
-    `Masjid Nurul Qalam Pakkanrebete\nID: ${transaksi.id}\nMuzakki: ${transaksi.muzakki_nama}\nJiwa: ${transaksi.jumlah_jiwa}\nZakat: ${
+    `${namaMasjid} ${alamatMasjid}\nID: ${transaksi.id}\nMuzakki: ${transaksi.muzakki_nama}\nJiwa: ${transaksi.jumlah_jiwa}\nZakat: ${
       transaksi.jenis === 'beras' 
         ? transaksi.beras_liter + ' Ltr Beras' 
         : transaksi.jenis === 'uang'
@@ -68,10 +75,10 @@ export default function ReceiptModal({ transaksi, onClose }: ReceiptModalProps) 
               <span className="text-2xl font-bold text-emerald-700">🕌</span>
             </div>
             <h2 className="text-xl font-serif font-black text-slate-950 tracking-wide uppercase">
-              Masjid Nurul Qalam
+              {namaMasjid}
             </h2>
             <p className="text-xs text-slate-500 font-mono font-bold uppercase tracking-wider">
-              Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan
+              {alamatMasjid}
             </p>
             <div className="mt-2.5 inline-block bg-emerald-100/60 text-emerald-800 text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase tracking-widest print:hidden">
               BUKTI PEMBAYARAN RESMI
@@ -222,7 +229,7 @@ export default function ReceiptModal({ transaksi, onClose }: ReceiptModalProps) 
                 </div>
                 <div className="text-center space-y-1">
                   <h4 className="font-serif font-black text-lg text-white uppercase tracking-wider">Zakat Fitrah Valid</h4>
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">Verifikasi Sistem Masjid Nurul Qalam Pakkanrebete</p>
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">Verifikasi Sistem {namaMasjid}</p>
                 </div>
 
                 <div className="bg-black/40 rounded-xl p-4.5 font-mono text-xs space-y-2.5 border border-slate-900">

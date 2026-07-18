@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { AppState } from '../types';
+import { AppState, User, UserRole } from '../types';
 import { 
   CloudLightning, 
   Database, 
@@ -16,22 +16,38 @@ import {
   FileSpreadsheet, 
   Lock,
   ArrowRight,
-  Coins
+  Coins,
+  Building2,
+  Users,
+  Plus,
+  Trash2,
+  Edit2,
+  UserCheck,
+  CheckCircle,
+  X
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface SyncSettingsViewProps {
   appState: AppState;
   onUpdateWebappUrl: (url: string) => void;
   onUpdateHargaBeras: (harga: number) => void;
   onResetToSeed: () => void;
+  onAddUser: (user: User) => void;
+  onUpdateUser: (user: User) => void;
+  onDeleteUser: (id: string) => void;
+  onUpdateMosqueInfo: (nama: string, alamat: string) => void;
 }
 
 export default function SyncSettingsView({
   appState,
   onUpdateWebappUrl,
   onUpdateHargaBeras,
-  onResetToSeed
+  onResetToSeed,
+  onAddUser,
+  onUpdateUser,
+  onDeleteUser,
+  onUpdateMosqueInfo
 }: SyncSettingsViewProps) {
   const [webappUrl, setWebappUrl] = useState(appState.gasWebappUrl || '');
   const [hargaBerasInput, setHargaBerasInput] = useState(appState.hargaBerasPerLiter);
@@ -40,9 +56,25 @@ export default function SyncSettingsView({
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [syncSuccess, setSyncSuccess] = useState<boolean | null>(null);
 
+  // Mosque Info editing states
+  const [namaMasjid, setNamaMasjid] = useState(appState.namaMasjid || 'Masjid Nurul Qalam');
+  const [alamatMasjid, setAlamatMasjid] = useState(appState.alamatMasjid || 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan');
+
+  // Petugas CRUD Form states
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [formNamaUser, setFormNamaUser] = useState('');
+  const [formUsername, setFormUsername] = useState('');
+  const [formRole, setFormRole] = useState<UserRole>('panitia');
+
   useEffect(() => {
     setHargaBerasInput(appState.hargaBerasPerLiter);
   }, [appState.hargaBerasPerLiter]);
+
+  useEffect(() => {
+    if (appState.namaMasjid) setNamaMasjid(appState.namaMasjid);
+    if (appState.alamatMasjid) setAlamatMasjid(appState.alamatMasjid);
+  }, [appState.namaMasjid, appState.alamatMasjid]);
 
   // Helper copy function
   const handleCopyCode = () => {
@@ -65,6 +97,81 @@ export default function SyncSettingsView({
     e.preventDefault();
     onUpdateWebappUrl(webappUrl.trim());
     alert('URL Google Apps Script Berhasil Disimpan!');
+  };
+
+  const handleSaveMosqueInfo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!namaMasjid.trim()) {
+      alert('Nama masjid tidak boleh kosong!');
+      return;
+    }
+    onUpdateMosqueInfo(namaMasjid.trim(), alamatMasjid.trim());
+    alert('Informasi Masjid & Wilayah berhasil diperbarui!');
+  };
+
+  const handleOpenAddUser = () => {
+    setEditingUser(null);
+    setFormNamaUser('');
+    setFormUsername('');
+    setFormRole('panitia');
+    setShowUserForm(true);
+  };
+
+  const handleOpenEditUser = (user: User) => {
+    setEditingUser(user);
+    setFormNamaUser(user.nama);
+    setFormUsername(user.username);
+    setFormRole(user.role);
+    setShowUserForm(true);
+  };
+
+  const handleSaveUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanNama = formNamaUser.trim();
+    const cleanUsername = formUsername.trim().toLowerCase();
+
+    if (!cleanNama || !cleanUsername) {
+      alert('Nama lengkap dan Username wajib diisi!');
+      return;
+    }
+
+    if (editingUser) {
+      // Update
+      onUpdateUser({
+        id: editingUser.id,
+        nama: cleanNama,
+        username: cleanUsername,
+        role: formRole
+      });
+      alert(`Berhasil memperbarui petugas: ${cleanNama}`);
+    } else {
+      // Create
+      const exists = appState.users.some(u => u.username === cleanUsername);
+      if (exists) {
+        alert('Username sudah terpakai oleh petugas lain!');
+        return;
+      }
+      const newId = `usr-${Date.now()}`;
+      onAddUser({
+        id: newId,
+        nama: cleanNama,
+        username: cleanUsername,
+        role: formRole
+      });
+      alert(`Berhasil menambahkan petugas baru: ${cleanNama}`);
+    }
+    setShowUserForm(false);
+    setEditingUser(null);
+  };
+
+  const handleDeleteUserClick = (user: User) => {
+    if (appState.users.length <= 1) {
+      alert('Tidak dapat menghapus satu-satunya petugas yang ada!');
+      return;
+    }
+    if (confirm(`Apakah Anda yakin ingin menghapus petugas "${user.nama}" dari sistem?`)) {
+      onDeleteUser(user.id);
+    }
   };
 
   // Sync Simulation (or real API request if Web App URL is present!)
@@ -138,20 +245,218 @@ export default function SyncSettingsView({
   return (
     <div className="space-y-8" id="sync-settings-root">
       {/* Settings Summary block */}
-      <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs">
+      <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs animate-fadeIn">
         <h2 className="text-xl md:text-2xl font-serif font-black tracking-tight text-slate-950 flex items-center gap-2.5 uppercase">
           <Database className="w-6 h-6 text-emerald-600" />
-          PENGATURAN ADMIN & SINKRONISASI
+          PENGATURAN MULTI-DKM & ADMIN
         </h2>
         <p className="text-sm text-slate-500 mt-1 font-medium">
-          Kelola parameter sistem secara dinamis seperti harga beras per liter, integrasi Google Spreadsheet, dan pencadangan database.
+          Konfigurasi identitas masjid, kelola daftar petugas amil, atur parameter zakat fitrah, dan integrasikan pencadangan cloud.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Connection & Configuration Setup Cards */}
+        {/* Left Column - Configurations */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Card: Konfigurasi Harga Beras */}
+          
+          {/* CARD 1: UPDATE NAMA MASJID & IDENTITAS */}
+          <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs space-y-5">
+            <h3 className="font-serif font-black text-slate-900 text-sm flex items-center gap-2.5 uppercase tracking-wide border-b border-gray-100 pb-3">
+              <Building2 className="w-5 h-5 text-emerald-600" />
+              Sesuaikan Identitas Masjid & Lembaga
+            </h3>
+            <p className="text-xs text-slate-500 font-medium">
+              Ubah identitas di bawah ini agar cetakan bukti pembayaran (kuitansi), judul laporan, dan pesan otomatis menyesuaikan dengan masjid Anda secara instan.
+            </p>
+
+            <form onSubmit={handleSaveMosqueInfo} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Nama Masjid / Instansi</label>
+                  <input
+                    type="text"
+                    required
+                    value={namaMasjid}
+                    onChange={(e) => setNamaMasjid(e.target.value)}
+                    placeholder="Contoh: Masjid Nurul Qalam Soppeng"
+                    className="w-full bg-slate-50/50 border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-bold focus:bg-white focus:outline-hidden focus:border-emerald-500 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Alamat Masjid / Wilayah</label>
+                  <input
+                    type="text"
+                    required
+                    value={alamatMasjid}
+                    onChange={(e) => setAlamatMasjid(e.target.value)}
+                    placeholder="Contoh: Lalabata, Kabupaten Soppeng"
+                    className="w-full bg-slate-50/50 border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:bg-white focus:outline-hidden focus:border-emerald-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-5 rounded-xl text-xs uppercase tracking-widest transition-all shadow-xs cursor-pointer border border-emerald-700/50 flex items-center gap-1.5"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Simpan Identitas Masjid
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* CARD 2: KELOLA PETUGAS AMIL (CRUD) */}
+          <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-3">
+              <h3 className="font-serif font-black text-slate-900 text-sm flex items-center gap-2.5 uppercase tracking-wide">
+                <Users className="w-5 h-5 text-emerald-600" />
+                Daftar Petugas & Amil Panitia ({appState.users.length})
+              </h3>
+              {!showUserForm && (
+                <button
+                  onClick={handleOpenAddUser}
+                  type="button"
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/60 font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-widest transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  Tambah Petugas
+                </button>
+              )}
+            </div>
+
+            {/* Petugas form overlay/container inline */}
+            <AnimatePresence>
+              {showUserForm && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden bg-slate-50 p-5 rounded-xl border border-gray-200/70"
+                >
+                  <form onSubmit={handleSaveUser} className="space-y-4">
+                    <div className="flex justify-between items-center border-b border-gray-200/50 pb-2.5 mb-1.5">
+                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                        {editingUser ? 'EDIT PETUGAS AMIL' : 'TAMBAH PETUGAS AMIL BARU'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserForm(false);
+                          setEditingUser(null);
+                        }}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-4.5 h-4.5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Nama Lengkap</label>
+                        <input
+                          type="text"
+                          required
+                          value={formNamaUser}
+                          onChange={(e) => setFormNamaUser(e.target.value)}
+                          placeholder="Contoh: Ahmad Zakariya"
+                          className="w-full bg-white border border-gray-250 rounded-xl px-4.5 py-2.5 text-xs text-slate-900 font-bold focus:outline-hidden focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Username Login</label>
+                        <input
+                          type="text"
+                          required
+                          disabled={!!editingUser}
+                          value={formUsername}
+                          onChange={(e) => setFormUsername(e.target.value)}
+                          placeholder="Contoh: ahmad"
+                          className="w-full bg-white border border-gray-250 rounded-xl px-4.5 py-2.5 text-xs text-slate-900 font-mono font-bold focus:outline-hidden focus:border-emerald-500 disabled:bg-slate-100 disabled:text-slate-400"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Hak Akses Peran (Role)</label>
+                        <select
+                          value={formRole}
+                          onChange={(e) => setFormRole(e.target.value as UserRole)}
+                          className="w-full bg-white border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-bold focus:outline-hidden focus:border-emerald-500"
+                        >
+                          <option value="panitia">Panitia (Amil Penerima)</option>
+                          <option value="admin">Administrator (Full Access)</option>
+                          <option value="dkm">Ketua DKM (Validasi Laporan)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5 justify-end border-t border-gray-200/50 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserForm(false);
+                          setEditingUser(null);
+                        }}
+                        className="bg-white hover:bg-slate-100 border border-gray-200 text-slate-600 font-bold py-2.5 px-4.5 rounded-xl text-xs uppercase tracking-wider transition-all"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-xs uppercase tracking-widest transition-all shadow-xs cursor-pointer border border-emerald-700/50 flex items-center gap-1.5"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        {editingUser ? 'Simpan Perubahan' : 'Daftarkan Petugas'}
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* User Lists inside a grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {appState.users.map(u => (
+                <div key={u.id} className="p-4 bg-slate-50/50 border border-gray-200 rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-emerald-800 text-white flex items-center justify-center font-serif font-black text-xs uppercase">
+                      {u.nama.substring(0, 2)}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">{u.nama}</h4>
+                      <span className="text-[10px] text-slate-400 font-mono font-medium block">
+                        @{u.username} • <strong className="text-slate-500 uppercase">{u.role}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenEditUser(u)}
+                      type="button"
+                      className="p-1.5 bg-white hover:bg-emerald-50 border border-gray-200 text-slate-600 hover:text-emerald-700 rounded-lg transition-colors cursor-pointer"
+                      title="Edit petugas"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUserClick(u)}
+                      type="button"
+                      className="p-1.5 bg-white hover:bg-rose-50 border border-gray-200 text-slate-600 hover:text-rose-700 rounded-lg transition-colors cursor-pointer"
+                      title="Hapus petugas"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CARD 3: KONFIGURASI HARGA BERAS */}
           <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs space-y-5">
             <h3 className="font-serif font-black text-slate-900 text-sm flex items-center gap-2 uppercase tracking-wide">
               <Coins className="w-4 h-4 text-emerald-600" />
@@ -190,7 +495,7 @@ export default function SyncSettingsView({
             </form>
           </div>
 
-          {/* Form to paste Apps Script URL */}
+          {/* CARD 4: GOOGLE SHEET INTEGRATION URL */}
           <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs space-y-5">
             <h3 className="font-serif font-black text-slate-900 text-sm flex items-center gap-2 uppercase tracking-wide">
               <Link2 className="w-4 h-4 text-emerald-600" />
@@ -231,7 +536,7 @@ export default function SyncSettingsView({
 
           {/* Sync Console Logs */}
           {(syncLogs.length > 0) && (
-            <div className="bg-slate-950 text-emerald-400 p-6 rounded-2xl font-mono text-xs space-y-3.5 border border-slate-900 shadow-inner">
+            <div className="bg-slate-950 text-emerald-400 p-6 rounded-2xl font-mono text-xs space-y-3.5 border border-slate-900 shadow-inner animate-fadeIn">
               <div className="flex justify-between items-center border-b border-slate-900 pb-2.5">
                 <span className="text-slate-500 font-bold tracking-wider">LOG KONSOL SINKRONISASI</span>
                 {syncSuccess !== null && (
@@ -289,7 +594,7 @@ export default function SyncSettingsView({
 
         {/* Copy paste Code Helper (Right Column) */}
         <div className="space-y-6">
-          <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs space-y-4">
+          <div className="bg-white p-7 rounded-2xl border border-gray-150/70 shadow-xs space-y-4 animate-fadeIn">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h4 className="font-serif font-black text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
