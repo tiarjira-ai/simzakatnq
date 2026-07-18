@@ -35,6 +35,8 @@ interface LaporanViewProps {
   currentUser: User;
   namaMasjid?: string;
   alamatMasjid?: string;
+  kontakMasjid?: string;
+  tahunHijriah?: string;
   users?: User[];
 }
 
@@ -49,6 +51,8 @@ export default function LaporanView({
   currentUser,
   namaMasjid = 'Masjid Nurul Qalam',
   alamatMasjid = 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan',
+  kontakMasjid = '0812-4567-8910',
+  tahunHijriah = '1447',
   users = []
 }: LaporanViewProps) {
   const [filterType, setFilterType] = useState<'harian' | 'mingguan' | 'rekap'>('rekap');
@@ -311,7 +315,7 @@ export default function LaporanView({
             {alamatMasjid}
           </p>
           <p className="text-[10px] text-slate-400 font-mono mt-1 font-bold uppercase tracking-wider">
-            Sekretariat: Kompleks {namaMasjid} | HP: 0812-4244-1122
+            Sekretariat: Kompleks {namaMasjid} {kontakMasjid ? `| Kontak: ${kontakMasjid}` : ''}
           </p>
         </div>
 
@@ -321,7 +325,7 @@ export default function LaporanView({
             LAPORAN REKAPITULASI AKHIR ZAKAT FITRAH
           </h2>
           <p className="text-xs text-slate-500 font-mono font-bold uppercase tracking-wider">
-            Periode: Ramadhan 1447 H / 2026 M
+            Periode: Ramadhan {tahunHijriah} H / {new Date().getFullYear()} M
           </p>
         </div>
 
@@ -563,9 +567,9 @@ export default function LaporanView({
                 animate={{ scale: 1, opacity: 1, rotate: -15 }}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 border-4 border-dashed border-emerald-600/50 rounded-full flex flex-col items-center justify-center p-1 pointer-events-none"
               >
-                <div className="text-emerald-600 font-extrabold text-[8px] uppercase tracking-tighter font-mono">MASJID NURUL QALAM</div>
+                <div className="text-emerald-600 font-extrabold text-[8px] uppercase tracking-tighter font-mono text-center max-w-[90px] truncate">{namaMasjid.toUpperCase()}</div>
                 <div className="text-emerald-700 font-black text-xs my-0.5 tracking-wider border-y border-dashed border-emerald-600/50 px-2 py-0.5 font-mono">SAH / VALID</div>
-                <div className="text-emerald-600 font-extrabold text-[7px] uppercase tracking-tighter font-mono">PAKKANREBETE</div>
+                <div className="text-emerald-600 font-extrabold text-[7px] uppercase tracking-tighter font-mono text-center max-w-[90px] truncate">{(alamatMasjid.split(',')[0] || 'PAKKANREBETE').toUpperCase()}</div>
               </motion.div>
             ) : (
               <div className="text-xs font-serif text-slate-300 italic">Belum Disetujui</div>

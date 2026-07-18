@@ -120,7 +120,8 @@ export const DEFAULT_STATE: AppState = {
   gasWebappUrl: '',
   namaMasjid: 'Masjid Nurul Qalam',
   alamatMasjid: 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan',
-  kontakMasjid: '0812-4567-8910'
+  kontakMasjid: '0812-4567-8910',
+  tahunHijriah: '1447'
 };
 
 const LOCAL_STORAGE_KEY = 'zakat_fitrah_app_state';

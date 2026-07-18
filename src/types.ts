@@ -74,4 +74,5 @@ export interface AppState {
   namaMasjid?: string;
   alamatMasjid?: string;
   kontakMasjid?: string;
+  tahunHijriah?: string;
 }

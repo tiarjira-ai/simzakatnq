@@ -36,7 +36,7 @@ interface SyncSettingsViewProps {
   onAddUser: (user: User) => void;
   onUpdateUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
-  onUpdateMosqueInfo: (nama: string, alamat: string, kontak: string) => void;
+  onUpdateMosqueInfo: (nama: string, alamat: string, kontak: string, tahunHijriah: string) => void;
 }
 
 export default function SyncSettingsView({
@@ -60,6 +60,7 @@ export default function SyncSettingsView({
   const [namaMasjid, setNamaMasjid] = useState(appState.namaMasjid || 'Masjid Nurul Qalam');
   const [alamatMasjid, setAlamatMasjid] = useState(appState.alamatMasjid || 'Pakkanrebete, Kabupaten Soppeng, Sulawesi Selatan');
   const [kontakMasjid, setKontakMasjid] = useState(appState.kontakMasjid || '0812-4567-8910');
+  const [tahunHijriah, setTahunHijriah] = useState(appState.tahunHijriah || '1447');
 
   // Petugas CRUD Form states
   const [showUserForm, setShowUserForm] = useState(false);
@@ -76,7 +77,8 @@ export default function SyncSettingsView({
     if (appState.namaMasjid) setNamaMasjid(appState.namaMasjid);
     if (appState.alamatMasjid) setAlamatMasjid(appState.alamatMasjid);
     if (appState.kontakMasjid) setKontakMasjid(appState.kontakMasjid);
-  }, [appState.namaMasjid, appState.alamatMasjid, appState.kontakMasjid]);
+    if (appState.tahunHijriah) setTahunHijriah(appState.tahunHijriah);
+  }, [appState.namaMasjid, appState.alamatMasjid, appState.kontakMasjid, appState.tahunHijriah]);
 
   // Helper copy function
   const handleCopyCode = () => {
@@ -107,8 +109,8 @@ export default function SyncSettingsView({
       alert('Nama masjid tidak boleh kosong!');
       return;
     }
-    onUpdateMosqueInfo(namaMasjid.trim(), alamatMasjid.trim(), kontakMasjid.trim());
-    alert('Informasi Masjid, Alamat, & Kontak berhasil diperbarui!');
+    onUpdateMosqueInfo(namaMasjid.trim(), alamatMasjid.trim(), kontakMasjid.trim(), tahunHijriah.trim());
+    alert('Informasi Masjid, Alamat, Kontak, & Periode Hijriah berhasil diperbarui!');
   };
 
   const handleOpenAddUser = () => {
@@ -272,7 +274,7 @@ export default function SyncSettingsView({
             </p>
 
             <form onSubmit={handleSaveMosqueInfo} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Nama Masjid / Instansi</label>
                   <input
@@ -306,6 +308,18 @@ export default function SyncSettingsView({
                     onChange={(e) => setKontakMasjid(e.target.value)}
                     placeholder="Contoh: 0812-4567-8910"
                     className="w-full bg-slate-50/50 border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:bg-white focus:outline-hidden focus:border-emerald-500 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Periode Hijriah (H)</label>
+                  <input
+                    type="text"
+                    required
+                    value={tahunHijriah}
+                    onChange={(e) => setTahunHijriah(e.target.value)}
+                    placeholder="Contoh: 1447"
+                    className="w-full bg-slate-50/50 border border-gray-250 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-bold focus:bg-white focus:outline-hidden focus:border-emerald-500 transition-all"
                   />
                 </div>
               </div>

@@ -78,12 +78,13 @@ export default function App() {
     }));
   };
 
-  const handleUpdateMosqueInfo = (nama: string, alamat: string, kontak: string) => {
+  const handleUpdateMosqueInfo = (nama: string, alamat: string, kontak: string, tahunHijriah: string) => {
     setState(prev => ({
       ...prev,
       namaMasjid: nama,
       alamatMasjid: alamat,
-      kontakMasjid: kontak
+      kontakMasjid: kontak,
+      tahunHijriah: tahunHijriah
     }));
   };
 
@@ -573,6 +574,8 @@ export default function App() {
                   currentUser={activeUser}
                   namaMasjid={state.namaMasjid}
                   alamatMasjid={state.alamatMasjid}
+                  kontakMasjid={state.kontakMasjid}
+                  tahunHijriah={state.tahunHijriah}
                   users={state.users}
                 />
               )}
