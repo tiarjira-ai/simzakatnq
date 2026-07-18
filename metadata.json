@@ -1,0 +1,8 @@
+{
+  "name": "Zakat Fitrah Masjid Nurul Qalam",
+  "description": "Aplikasi pengelolaan Zakat Fitrah, pendataan Muzakki & Mustahik, perhitungan otomatis, pencetakan bukti dengan QR Code, dan laporan real-time untuk Masjid Nurul Qalam Pakkanrebete.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
