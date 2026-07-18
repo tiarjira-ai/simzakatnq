@@ -540,6 +540,7 @@ export default function App() {
                   currentUser={activeUser}
                   namaMasjid={state.namaMasjid}
                   alamatMasjid={state.alamatMasjid}
+                  users={state.users}
                 />
               )}
 

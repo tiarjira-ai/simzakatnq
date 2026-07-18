@@ -28,6 +28,7 @@ export const SEED_TRANSAKSIS: Transaksi[] = [
     jenis: 'beras',
     nominal: 0,
     beras_liter: 14, // 4 * 3.5
+    infaq: 20000,
     tanggal: '2026-07-14',
     petugas: 'Siti Rahma',
     status: 'Valid'
@@ -40,6 +41,7 @@ export const SEED_TRANSAKSIS: Transaksi[] = [
     jenis: 'uang',
     nominal: 126000, // 3 * 3.5 * 12000
     beras_liter: 10.5,
+    infaq: 10000,
     metode_pembayaran: 'Tunai',
     tanggal: '2026-07-15',
     petugas: 'Siti Rahma',
@@ -53,6 +55,7 @@ export const SEED_TRANSAKSIS: Transaksi[] = [
     jenis: 'uang',
     nominal: 210000, // 5 * 3.5 * 12000
     beras_liter: 17.5,
+    infaq: 50000,
     metode_pembayaran: 'QRIS',
     tanggal: '2026-07-16',
     petugas: 'Andi Pratama',
@@ -66,6 +69,7 @@ export const SEED_TRANSAKSIS: Transaksi[] = [
     jenis: 'beras',
     nominal: 0,
     beras_liter: 7, // 2 * 3.5
+    infaq: 0,
     tanggal: '2026-07-16',
     petugas: 'Siti Rahma',
     status: 'Valid'

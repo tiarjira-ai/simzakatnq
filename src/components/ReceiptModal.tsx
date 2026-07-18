@@ -34,7 +34,7 @@ export default function ReceiptModal({
         : transaksi.jenis === 'uang'
           ? formatCurrency(transaksi.nominal)
           : `${transaksi.beras_liter} Ltr Beras + ${formatCurrency(transaksi.nominal)}`
-    }\nTanggal: ${transaksi.tanggal}\nStatus: VALID`
+    }${transaksi.infaq && transaksi.infaq > 0 ? `\nInfaq: ${formatCurrency(transaksi.infaq)}` : ''}\nTanggal: ${transaksi.tanggal}\nStatus: VALID`
   );
   
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrData}`;
@@ -112,8 +112,8 @@ export default function ReceiptModal({
               </span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-              <span className="text-slate-500 font-mono font-bold uppercase tracking-wider">Jumlah Pembayaran</span>
-              <span className="text-slate-950 font-serif font-black text-sm md:text-base text-emerald-800 text-right">
+              <span className="text-slate-500 font-mono font-bold uppercase tracking-wider">Zakat Fitrah</span>
+              <span className="text-slate-950 font-serif font-black text-sm text-emerald-800 text-right">
                 {transaksi.jenis === 'beras' 
                   ? `${transaksi.beras_liter} Liter Beras` 
                   : transaksi.jenis === 'uang'
@@ -121,6 +121,22 @@ export default function ReceiptModal({
                     : `${transaksi.beras_liter} L Beras + ${formatCurrency(transaksi.nominal)}`}
               </span>
             </div>
+            {transaksi.infaq && transaksi.infaq > 0 ? (
+              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                <span className="text-slate-500 font-mono font-bold uppercase tracking-wider">Infaq / Sedekah</span>
+                <span className="text-slate-950 font-serif font-black text-sm text-amber-700 text-right animate-pulse">
+                  {formatCurrency(transaksi.infaq)}
+                </span>
+              </div>
+            ) : null}
+            {transaksi.infaq && transaksi.infaq > 0 && (transaksi.jenis === 'uang' || transaksi.jenis === 'campuran') ? (
+              <div className="flex justify-between items-center py-2.5 border-b border-gray-100 bg-[#fbfcfb] px-2 rounded-lg">
+                <span className="text-emerald-950 font-mono font-extrabold uppercase tracking-wider text-[10px]">Total Pembayaran Uang</span>
+                <span className="text-slate-950 font-serif font-black text-sm md:text-base text-right text-emerald-900">
+                  {formatCurrency(transaksi.nominal + transaksi.infaq)}
+                </span>
+              </div>
+            ) : null}
             {(transaksi.jenis === 'uang' || transaksi.jenis === 'campuran') && transaksi.metode_pembayaran && (
               <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                 <span className="text-slate-500 font-mono font-bold uppercase tracking-wider">Metode</span>
@@ -250,7 +266,7 @@ export default function ReceiptModal({
                     <span className="text-white font-bold uppercase">{transaksi.jenis === 'campuran' ? 'Beras + Uang' : transaksi.jenis}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 font-bold uppercase tracking-wider">JUMLAH BAYAR:</span>
+                    <span className="text-slate-500 font-bold uppercase tracking-wider">JUMLAH ZAKAT:</span>
                     <span className="text-emerald-400 font-black">
                       {transaksi.jenis === 'beras' 
                         ? `${transaksi.beras_liter} Liter Beras` 
@@ -259,6 +275,22 @@ export default function ReceiptModal({
                           : `${transaksi.beras_liter} L Beras + ${formatCurrency(transaksi.nominal)}`}
                     </span>
                   </div>
+                  {transaksi.infaq && transaksi.infaq > 0 ? (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">JUMLAH INFAQ:</span>
+                      <span className="text-amber-400 font-black">
+                        {formatCurrency(transaksi.infaq)}
+                      </span>
+                    </div>
+                  ) : null}
+                  {transaksi.infaq && transaksi.infaq > 0 && (transaksi.jenis === 'uang' || transaksi.jenis === 'campuran') ? (
+                    <div className="flex justify-between border-t border-slate-900 pt-1.5 mt-1">
+                      <span className="text-slate-400 font-extrabold uppercase tracking-wider">TOTAL TUNAI/DIGITAL:</span>
+                      <span className="text-emerald-400 font-black text-sm">
+                        {formatCurrency(transaksi.nominal + transaksi.infaq)}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between">
                     <span className="text-slate-500 font-bold uppercase tracking-wider">TANGGAL BAYAR:</span>
                     <span className="text-white font-bold">{transaksi.tanggal}</span>

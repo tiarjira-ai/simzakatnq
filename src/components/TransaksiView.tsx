@@ -57,6 +57,7 @@ export default function TransaksiView({
   const [metode, setMetode] = useState<'Tunai' | 'QRIS' | 'Transfer'>('Tunai');
   const [buktiBayar, setBuktiBayar] = useState<string>(''); // Simulated receipt proof
   const [isUploading, setIsUploading] = useState(false);
+  const [infaq, setInfaq] = useState<number>(0);
 
   // Filter out Muzakkis who already have an active transaction, but keep the current edited Muzakki visible!
   const paidMuzakkiIds = new Set(transaksis.map(t => t.muzakki_id));
@@ -95,6 +96,7 @@ export default function TransaksiView({
     setJumlahJiwaBeras(1);
     setMetode('Tunai');
     setBuktiBayar('');
+    setInfaq(0);
     setEditingId(null);
   };
 
@@ -104,6 +106,7 @@ export default function TransaksiView({
     setJenis(t.jenis);
     setMetode(t.metode_pembayaran || 'Tunai');
     setBuktiBayar(t.bukti_pembayaran || '');
+    setInfaq(t.infaq || 0);
     if (t.jenis === 'campuran') {
       setJumlahJiwaBeras(Math.round(t.beras_liter / 3.5));
     } else {
@@ -133,6 +136,8 @@ export default function TransaksiView({
       return;
     }
 
+    const isMoneyInvolved = jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0) || (infaq > 0);
+
     if (editingId) {
       const existing = transaksis.find(t => t.id === editingId);
       const updatedTx: Transaksi = {
@@ -143,8 +148,9 @@ export default function TransaksiView({
         jenis,
         nominal: calc.nominal,
         beras_liter: calc.berasLiter,
-        metode_pembayaran: (jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0)) ? metode : undefined,
-        bukti_pembayaran: (jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0)) && metode !== 'Tunai' ? (buktiBayar || existing?.bukti_pembayaran || 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=200&auto=format&fit=crop') : undefined,
+        infaq,
+        metode_pembayaran: isMoneyInvolved ? metode : undefined,
+        bukti_pembayaran: isMoneyInvolved && metode !== 'Tunai' ? (buktiBayar || existing?.bukti_pembayaran || 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=200&auto=format&fit=crop') : undefined,
         tanggal: existing?.tanggal || new Date().toISOString().split('T')[0],
         petugas: existing?.petugas || currentUser.nama,
         status: existing?.status || 'Valid'
@@ -161,8 +167,9 @@ export default function TransaksiView({
         jenis,
         nominal: calc.nominal,
         beras_liter: calc.berasLiter,
-        metode_pembayaran: (jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0)) ? metode : undefined,
-        bukti_pembayaran: (jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0)) && metode !== 'Tunai' ? (buktiBayar || 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=200&auto=format&fit=crop') : undefined,
+        infaq,
+        metode_pembayaran: isMoneyInvolved ? metode : undefined,
+        bukti_pembayaran: isMoneyInvolved && metode !== 'Tunai' ? (buktiBayar || 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=200&auto=format&fit=crop') : undefined,
         tanggal: new Date().toISOString().split('T')[0],
         petugas: currentUser.nama,
         status: 'Valid'
@@ -310,8 +317,25 @@ export default function TransaksiView({
                   </div>
                 )}
 
+                {/* Infaq Sukarela Field (Always show so users can contribute) */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Infaq Sukarela / Sedekah (Rp)</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">Rp</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1000}
+                      value={infaq || ''}
+                      onChange={(e) => setInfaq(parseInt(e.target.value, 10) || 0)}
+                      placeholder="Contoh: 10000"
+                      className="w-full bg-slate-50/50 border border-gray-250 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 focus:outline-hidden focus:border-emerald-500 font-mono font-bold focus:bg-white"
+                    />
+                  </div>
+                </div>
+
                 {/* Conditional Fields for Cash */}
-                {(jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0)) && (
+                {(jenis === 'uang' || (jenis === 'campuran' && calc.nominal > 0) || (infaq > 0)) && (
                   <>
                     {/* Payment Method */}
                     <div className="space-y-1.5">
@@ -376,7 +400,13 @@ export default function TransaksiView({
                         : jenis === 'uang' 
                           ? formatCurrency(calc.nominal)
                           : `${calc.berasLiter} L Beras + ${formatCurrency(calc.nominal)}`}
+                      {infaq > 0 && ` + Infaq: ${formatCurrency(infaq)}`}
                     </span>
+                    {infaq > 0 && (
+                      <span className="text-[10px] text-emerald-700 font-bold block mt-1 font-mono">
+                        Total Uang Terbayar: {formatCurrency(calc.nominal + infaq)}
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
@@ -485,40 +515,51 @@ export default function TransaksiView({
                       {t.jumlah_jiwa} Jiwa
                     </td>
                     <td className="py-4 px-4 text-xs">
-                      {t.jenis === 'beras' ? (
-                        <span className="font-mono font-bold text-emerald-900 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-150 inline-flex items-center gap-1.5 uppercase">
-                          <Package className="w-3.5 h-3.5" />
-                          {t.beras_liter} Liter Beras
-                        </span>
-                      ) : t.jenis === 'uang' ? (
-                        <div className="space-y-1">
-                          <span className="font-mono font-bold text-blue-900 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-150 inline-flex items-center gap-1.5 uppercase">
-                            <Coins className="w-3.5 h-3.5" />
-                            {formatCurrency(t.nominal)}
+                      <div className="space-y-1.5">
+                        {t.jenis === 'beras' ? (
+                          <span className="font-mono font-bold text-emerald-900 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-150 inline-flex items-center gap-1.5 uppercase">
+                            <Package className="w-3.5 h-3.5" />
+                            {t.beras_liter} Liter Beras
                           </span>
-                          <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">
-                            VIA: <span className="text-slate-600">{t.metode_pembayaran}</span>
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="space-y-1.5">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-mono font-bold text-emerald-950 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 inline-flex items-center gap-1 uppercase w-fit">
-                              <Package className="w-3 h-3 text-emerald-600" />
-                              {t.beras_liter} L Beras
-                            </span>
-                            <span className="font-mono font-bold text-blue-950 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100 inline-flex items-center gap-1 uppercase w-fit">
-                              <Coins className="w-3 h-3 text-blue-600" />
+                        ) : t.jenis === 'uang' ? (
+                          <div className="space-y-1">
+                            <span className="font-mono font-bold text-blue-900 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-150 inline-flex items-center gap-1.5 uppercase">
+                              <Coins className="w-3.5 h-3.5" />
                               {formatCurrency(t.nominal)}
                             </span>
-                          </div>
-                          {t.metode_pembayaran && (
                             <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">
                               VIA: <span className="text-slate-600">{t.metode_pembayaran}</span>
                             </span>
-                          )}
-                        </div>
-                      )}
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5">
+                            <div className="flex flex-col gap-1">
+                              <span className="font-mono font-bold text-emerald-950 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 inline-flex items-center gap-1 uppercase w-fit">
+                                <Package className="w-3 h-3 text-emerald-600" />
+                                {t.beras_liter} L Beras
+                              </span>
+                              <span className="font-mono font-bold text-blue-950 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100 inline-flex items-center gap-1 uppercase w-fit">
+                                <Coins className="w-3 h-3 text-blue-600" />
+                                {formatCurrency(t.nominal)}
+                              </span>
+                            </div>
+                            {t.metode_pembayaran && (
+                              <span className="text-[10px] text-slate-400 block font-mono font-bold uppercase tracking-wider">
+                                VIA: <span className="text-slate-600">{t.metode_pembayaran}</span>
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Infaq Display */}
+                        {t.infaq && t.infaq > 0 ? (
+                          <div className="mt-1.5">
+                            <span className="font-mono font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-150 inline-flex items-center gap-1 uppercase text-[10px] w-fit">
+                              <span className="text-amber-600">💖</span> Infaq: {formatCurrency(t.infaq)}
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="py-4 px-4 text-xs">
                       <div className="flex items-center gap-1 text-slate-900 font-bold">

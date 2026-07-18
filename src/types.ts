@@ -30,6 +30,7 @@ export interface Transaksi {
   jenis: 'beras' | 'uang' | 'campuran';
   nominal: number; // 0 if beras
   beras_liter: number; // 3.5 * jumlah_jiwa
+  infaq?: number; // Infaq Sukarela / Sedekah (Rp)
   metode_pembayaran?: 'Tunai' | 'QRIS' | 'Transfer';
   bukti_pembayaran?: string; // Base64 or mock image url
   tanggal: string; // YYYY-MM-DD

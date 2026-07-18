@@ -61,6 +61,10 @@ export default function DashboardView({
     .filter(t => (t.jenis === 'uang' || t.jenis === 'campuran') && t.status === 'Valid')
     .reduce((acc, t) => acc + t.nominal, 0);
 
+  const totalInfaqDiterima = transaksis
+    .filter(t => t.status === 'Valid')
+    .reduce((acc, t) => acc + (t.infaq || 0), 0);
+
   // Distributions
   const totalBerasDisalurkan = distribusis.reduce((acc, d) => acc + d.beras_liter, 0);
   const totalUangDisalurkan = distribusis.reduce((acc, d) => acc + d.uang, 0);
@@ -421,19 +425,19 @@ export default function DashboardView({
 
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-blue-50/40 p-4 rounded-xl border border-blue-100/50 text-center sm:text-left">
-              <span className="text-[9px] font-mono font-bold text-blue-600 uppercase tracking-widest block">DITERIMA</span>
+              <span className="text-[9px] font-mono font-bold text-blue-600 uppercase tracking-widest block">ZAKAT DITERIMA</span>
               <span className="text-lg sm:text-xl font-black text-blue-900 block mt-1.5 truncate font-sans">{formatCurrency(totalUangDiterima)}</span>
               <span className="text-[10px] text-slate-400 mt-1 block">Zakat Tunai</span>
             </div>
-            <div className="bg-slate-50/50 p-4 rounded-xl border border-gray-100 text-center sm:text-left">
-              <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest block">DISALURKAN</span>
-              <span className="text-lg sm:text-xl font-black text-slate-800 block mt-1.5 truncate font-sans">{formatCurrency(totalUangDisalurkan)}</span>
-              <span className="text-[10px] text-slate-400 mt-1 block">{persentaseUangTersalurkan}% Tersalur</span>
+            <div className="bg-amber-50/40 p-4 rounded-xl border border-amber-100/50 text-center sm:text-left">
+              <span className="text-[9px] font-mono font-bold text-amber-600 uppercase tracking-widest block">INFAQ DITERIMA</span>
+              <span className="text-lg sm:text-xl font-black text-amber-900 block mt-1.5 truncate font-sans">{formatCurrency(totalInfaqDiterima)}</span>
+              <span className="text-[10px] text-amber-600 mt-1 block">Infaq Sukarela</span>
             </div>
             <div className="bg-orange-50/40 p-4 rounded-xl border border-orange-100/50 text-center sm:text-left">
-              <span className="text-[9px] font-mono font-bold text-orange-600 uppercase tracking-widest block">SISA KAS</span>
-              <span className="text-lg sm:text-xl font-black text-orange-900 block mt-1.5 truncate font-sans">{formatCurrency(sisaUang)}</span>
-              <span className="text-[10px] text-orange-600/70 mt-1 block font-medium">Dalam Brankas</span>
+              <span className="text-[9px] font-mono font-bold text-orange-600 uppercase tracking-widest block">TOTAL KAS AKTIF</span>
+              <span className="text-lg sm:text-xl font-black text-orange-900 block mt-1.5 truncate font-sans">{formatCurrency(sisaUang + totalInfaqDiterima)}</span>
+              <span className="text-[10px] text-orange-600/70 mt-1 block font-medium">Zakat & Infaq</span>
             </div>
           </div>
 
